@@ -3687,10 +3687,8 @@ function openBrandingWizard(forced){
     '<div class="kms-field"><label>' + kmsT('Company Logo (image)', 'شعار الشركة (صورة)') + '</label>' +
     '<div class="kms-file-row"><button type="button" class="kms-file-btn" id="kmsFCompanyLogoBtn">' + kmsT('Choose File', 'اختر ملف') + '</button><span class="kms-file-name" id="kmsFCompanyLogoName">' + (b.companyLogo ? kmsT('Current logo (unchanged)', 'الشعار الحالي (بدون تغيير)') : kmsT('No file chosen', 'لم يتم اختيار ملف')) + '</span></div>' +
     '<input type="file" accept="image/*" id="kmsFCompanyLogo" style="display:none">' +
-    '<div class="kms-row2">' +
-      '<div class="kms-field"><label>' + kmsT('Contractor Role', 'دور المقاول') + '</label><input type="text" id="kmsFContractorRole" value="' + (b.contractorRole||'Main Contractor') + '"></div>' +
-      '<div class="kms-field"><label>' + kmsT('Contractor Name', 'اسم المقاول') + '</label><input type="text" id="kmsFContractorName" value="' + (b.contractorName||'') + '"></div>' +
-    '</div>' +
+    '<div class="kms-field"><label>' + kmsT('Contractor Role', 'دور المقاول') + '</label><input type="text" id="kmsFContractorRole" value="' + (b.contractorRole||'Main Contractor') + '"></div>' +
+    '<div class="kms-field"><label>' + kmsT('Contractor Name', 'اسم المقاول') + '</label><input type="text" id="kmsFContractorName" value="' + (b.contractorName||'') + '"></div>' +
     '<div class="kms-field"><label>' + kmsT('Contractor Logo (image)', 'شعار المقاول (صورة)') + '</label>' +
     '<div class="kms-file-row"><button type="button" class="kms-file-btn" id="kmsFContractorLogoBtn">' + kmsT('Choose File', 'اختر ملف') + '</button><span class="kms-file-name" id="kmsFContractorLogoName">' + (b.contractorLogo ? kmsT('Current logo (unchanged)', 'الشعار الحالي (بدون تغيير)') : kmsT('No file chosen', 'لم يتم اختيار ملف')) + '</span></div>' +
     '<input type="file" accept="image/*" id="kmsFContractorLogo" style="display:none">' +
