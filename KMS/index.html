@@ -3808,6 +3808,14 @@ function kmsExportBackup(){
 
 (function kmsBoot(){
   try {
+    try {
+      var kmsSavedLang = localStorage.getItem('kms_lang');
+      if (kmsSavedLang === 'ar' || kmsSavedLang === 'en') {
+        currentLang = kmsSavedLang;
+        document.documentElement.lang = currentLang;
+        document.documentElement.dir = (currentLang === 'ar') ? 'rtl' : 'ltr';
+      }
+    } catch(eLang) {}
     applyBranding();
     var params = new URLSearchParams(location.search);
     var setupParam = params.get('setup');
