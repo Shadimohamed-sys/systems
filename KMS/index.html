@@ -3624,6 +3624,20 @@ function migrateBrandingIfNeeded(){
 }
 migrateBrandingIfNeeded();
 
+function backfillArabicBrandingIfMissing(){
+  try {
+    var b = getBranding();
+    if (!b) return;
+    var changed = false;
+    if (b.companyName && !b.companyNameAr && typeof I18N !== 'undefined' && I18N.ar) { b.companyNameAr = I18N.ar.app_company; changed = true; }
+    if (b.companySubtitle && !b.companySubtitleAr && typeof I18N !== 'undefined' && I18N.ar) { b.companySubtitleAr = I18N.ar.app_subtitle; changed = true; }
+    if (b.contractorRole && !b.contractorRoleAr && typeof I18N !== 'undefined' && I18N.ar) { b.contractorRoleAr = I18N.ar.app_contractor_role; changed = true; }
+    if (b.contractorName && !b.contractorNameAr && typeof I18N !== 'undefined' && I18N.ar) { b.contractorNameAr = I18N.ar.app_contractor_name; changed = true; }
+    if (b.systemTitle && !b.systemTitleAr && typeof I18N !== 'undefined' && I18N.ar) { b.systemTitleAr = I18N.ar.app_title; changed = true; }
+    if (changed) saveBrandingObj(b);
+  } catch(eBackfill) { try { console.error('backfillArabicBrandingIfMissing failed', eBackfill); } catch(e5){} }
+}
+
 function applyBranding(){
   var b = getBranding() || {};
   try {
@@ -3841,6 +3855,7 @@ function kmsExportBackup(){
         document.documentElement.dir = (currentLang === 'ar') ? 'rtl' : 'ltr';
       }
     } catch(eLang) {}
+    backfillArabicBrandingIfMissing();
     applyBranding();
     var params = new URLSearchParams(location.search);
     var setupParam = params.get('setup');
