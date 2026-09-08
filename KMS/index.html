@@ -4814,7 +4814,8 @@ document.addEventListener('click', (e) => {
   var otpOpen   = document.getElementById('otp-overlay').classList.contains('open');
   var camOpen   = document.getElementById('cam-overlay').classList.contains('open');
   var elOpen    = document.getElementById('el-overlay').classList.contains('open');
-  if (!adminOpen && !slOpen && !kdOpen && !kiOpen && !otpOpen && !camOpen && !elOpen) {
+  var kmsOvOpen = !!document.getElementById('kmsOv');
+  if (!adminOpen && !slOpen && !kdOpen && !kiOpen && !otpOpen && !camOpen && !elOpen && !kmsOvOpen) {
     focusInput();
   }
 });
