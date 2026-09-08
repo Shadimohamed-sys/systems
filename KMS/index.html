@@ -3647,7 +3647,7 @@ function kmsEnsureStyles(){
   if (document.getElementById('kmsSetupStyles')) return;
   var style = document.createElement('style');
   style.id = 'kmsSetupStyles';
-  style.textContent = '\n.kms-ov{position:fixed;inset:0;background:rgba(8,12,28,.72);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Arial,Helvetica,sans-serif}\n.kms-ov-box{background:#101a3d;color:#eaf0ff;border:1px solid rgba(246,198,132,.28);border-radius:14px;max-width:520px;width:100%;max-height:88vh;overflow:auto;padding:26px 26px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative}\n.kms-ov-box h2{margin:0 0 4px;font-size:19px;color:#f6c684}\n.kms-ov-box p.kms-sub{margin:0 0 18px;font-size:13px;color:#aebbe6}\n.kms-ov-close{position:absolute;top:12px;right:14px;background:none;border:none;color:#aebbe6;font-size:20px;cursor:pointer}\n.kms-field{margin-bottom:13px}\n.kms-field label{display:block;font-size:12.5px;color:#aebbe6;margin-bottom:5px}\n.kms-field input[type=text]{width:100%;box-sizing:border-box;padding:9px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.16);background:#0e1a4c;color:#eaf0ff;font-size:14px}\n.kms-field input[type=file]{width:100%;font-size:12.5px;color:#aebbe6}\n.kms-row2{display:flex;gap:10px}\n.kms-row2 .kms-field{flex:1}\n.kms-ov-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px;border-radius:8px;border:none;font-weight:700;font-size:14px;cursor:pointer;margin-top:6px}\n.kms-ov-btn.primary{background:#f6c684;color:#101a3d}\n.kms-ov-btn.ghost{background:transparent;color:#aebbe6;border:1px solid rgba(255,255,255,.18)}\n.kms-menu-item{display:block;width:100%;text-align:left;background:#0e1a4c;border:1px solid rgba(255,255,255,.14);color:#eaf0ff;border-radius:9px;padding:12px 14px;margin-bottom:9px;cursor:pointer;font-size:14px}\n.kms-menu-item:hover{border-color:#f6c684}\n.kms-drop{border:1.5px dashed rgba(255,255,255,.25);border-radius:10px;padding:16px;text-align:center;font-size:13px;color:#aebbe6;cursor:pointer;margin-bottom:6px}\n';
+  style.textContent = '\n.kms-ov{position:fixed;inset:0;background:rgba(8,12,28,.72);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;font-family:Arial,Helvetica,sans-serif}\n.kms-ov-box{background:#101a3d;color:#eaf0ff;border:1px solid rgba(246,198,132,.28);border-radius:14px;max-width:520px;width:100%;max-height:88vh;overflow:auto;padding:26px 26px 22px;box-shadow:0 20px 60px rgba(0,0,0,.5);position:relative}\n.kms-ov-box h2{margin:0 0 4px;font-size:19px;color:#f6c684}\n.kms-ov-box p.kms-sub{margin:0 0 18px;font-size:13px;color:#aebbe6}\n.kms-ov-close{position:absolute;top:12px;right:14px;background:none;border:none;color:#aebbe6;font-size:20px;cursor:pointer}\n.kms-field{margin-bottom:13px}\n.kms-field label{display:block;font-size:12.5px;color:#aebbe6;margin-bottom:5px}\n.kms-field input[type=text]{width:100%;box-sizing:border-box;padding:9px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.16);background:#0e1a4c;color:#eaf0ff;font-size:14px}\n.kms-field input[type=file]{width:100%;font-size:12.5px;color:#aebbe6}\n.kms-row2{display:flex;gap:10px}\n.kms-row2 .kms-field{flex:1}\n.kms-ov-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px;border-radius:8px;border:none;font-weight:700;font-size:14px;cursor:pointer;margin-top:6px}\n.kms-ov-btn.primary{background:#f6c684;color:#101a3d}\n.kms-ov-btn.ghost{background:transparent;color:#aebbe6;border:1px solid rgba(255,255,255,.18)}\n.kms-menu-item{display:block;width:100%;text-align:left;background:#0e1a4c;border:1px solid rgba(255,255,255,.14);color:#eaf0ff;border-radius:9px;padding:12px 14px;margin-bottom:9px;cursor:pointer;font-size:14px}\n.kms-menu-item:hover{border-color:#f6c684}\n.kms-drop{border:1.5px dashed rgba(255,255,255,.25);border-radius:10px;padding:16px;text-align:center;font-size:13px;color:#aebbe6;cursor:pointer;margin-bottom:6px}\n.kms-file-row{display:flex;align-items:center;gap:10px;background:#0e1a4c;border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:7px 9px}\n.kms-file-btn{flex:0 0 auto;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#eaf0ff;border-radius:6px;padding:6px 12px;font-size:12.5px;cursor:pointer}\n.kms-file-btn:hover{border-color:#f6c684}\n.kms-file-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:#aebbe6}\n';
   document.head.appendChild(style);
 }
 
@@ -3684,17 +3684,39 @@ function openBrandingWizard(forced){
     '<p class="kms-sub">' + kmsT('Enter your company details. This is shown in the app header, printouts and reports.', 'أدخل بيانات شركتك. سيتم عرضها في رأس الصفحة والمطبوعات والتقارير.') + '</p>' +
     '<div class="kms-field"><label>' + kmsT('Company / Airport Name', 'اسم الشركة / المطار') + '</label><input type="text" id="kmsFCompanyName" value="' + (b.companyName||'') + '"></div>' +
     '<div class="kms-field"><label>' + kmsT('Site / Location Subtitle', 'الموقع / العنوان الفرعي') + '</label><input type="text" id="kmsFCompanySubtitle" value="' + (b.companySubtitle||'') + '"></div>' +
-    '<div class="kms-field"><label>' + kmsT('Company Logo (image)', 'شعار الشركة (صورة)') + '</label><input type="file" accept="image/*" id="kmsFCompanyLogo"></div>' +
+    '<div class="kms-field"><label>' + kmsT('Company Logo (image)', 'شعار الشركة (صورة)') + '</label>' +
+    '<div class="kms-file-row"><button type="button" class="kms-file-btn" id="kmsFCompanyLogoBtn">' + kmsT('Choose File', 'اختر ملف') + '</button><span class="kms-file-name" id="kmsFCompanyLogoName">' + (b.companyLogo ? kmsT('Current logo (unchanged)', 'الشعار الحالي (بدون تغيير)') : kmsT('No file chosen', 'لم يتم اختيار ملف')) + '</span></div>' +
+    '<input type="file" accept="image/*" id="kmsFCompanyLogo" style="display:none">' +
     '<div class="kms-row2">' +
       '<div class="kms-field"><label>' + kmsT('Contractor Role', 'دور المقاول') + '</label><input type="text" id="kmsFContractorRole" value="' + (b.contractorRole||'Main Contractor') + '"></div>' +
       '<div class="kms-field"><label>' + kmsT('Contractor Name', 'اسم المقاول') + '</label><input type="text" id="kmsFContractorName" value="' + (b.contractorName||'') + '"></div>' +
     '</div>' +
-    '<div class="kms-field"><label>' + kmsT('Contractor Logo (image)', 'شعار المقاول (صورة)') + '</label><input type="file" accept="image/*" id="kmsFContractorLogo"></div>' +
+    '<div class="kms-field"><label>' + kmsT('Contractor Logo (image)', 'شعار المقاول (صورة)') + '</label>' +
+    '<div class="kms-file-row"><button type="button" class="kms-file-btn" id="kmsFContractorLogoBtn">' + kmsT('Choose File', 'اختر ملف') + '</button><span class="kms-file-name" id="kmsFContractorLogoName">' + (b.contractorLogo ? kmsT('Current logo (unchanged)', 'الشعار الحالي (بدون تغيير)') : kmsT('No file chosen', 'لم يتم اختيار ملف')) + '</span></div>' +
+    '<input type="file" accept="image/*" id="kmsFContractorLogo" style="display:none">' +
     '<div class="kms-field"><label>' + kmsT('System Title', 'عنوان النظام') + '</label><input type="text" id="kmsFSystemTitle" value="' + (b.systemTitle||'Airport Keys Management System') + '"></div>' +
     '<button class="kms-ov-btn primary" onclick="kmsSaveBrandingFromForm()">' + kmsT('Save & Continue', 'حفظ ومتابعة') + '</button>' +
     (forced ? ('<div style="margin-top:10px"><button class="kms-ov-btn ghost" onclick="openRestoreOverlay(true)">' + kmsT('Have a backup file instead?', 'هل لديك ملف نسخة احتياطية؟') + '</button></div>') : '') +
     '</div>';
   document.body.appendChild(d);
+  var companyBtn = document.getElementById('kmsFCompanyLogoBtn');
+  var companyInput = document.getElementById('kmsFCompanyLogo');
+  var companyName = document.getElementById('kmsFCompanyLogoName');
+  if (companyBtn && companyInput) {
+    companyBtn.onclick = function(){ companyInput.click(); };
+    companyInput.onchange = function(){
+      if (companyInput.files && companyInput.files[0] && companyName) companyName.textContent = companyInput.files[0].name;
+    };
+  }
+  var contractorBtn = document.getElementById('kmsFContractorLogoBtn');
+  var contractorInput = document.getElementById('kmsFContractorLogo');
+  var contractorName2 = document.getElementById('kmsFContractorLogoName');
+  if (contractorBtn && contractorInput) {
+    contractorBtn.onclick = function(){ contractorInput.click(); };
+    contractorInput.onchange = function(){
+      if (contractorInput.files && contractorInput.files[0] && contractorName2) contractorName2.textContent = contractorInput.files[0].name;
+    };
+  }
 }
 
 function kmsSaveBrandingFromForm(){
