@@ -3596,20 +3596,26 @@ function getBranding(){ try { var v = localStorage.getItem('kms_branding'); retu
 function saveBrandingObj(b){ try { localStorage.setItem('kms_branding', JSON.stringify(b)); } catch(e){} }
 
 function migrateBrandingIfNeeded(){
-  if (getBranding()) return;
-  var hasExisting = localStorage.getItem('kms_keys') || localStorage.getItem('kms_employees') || localStorage.getItem('kms_transactions');
-  if (hasExisting) {
-    saveBrandingObj({
-      companyName: 'Egyptian Airports Company',
-      companySubtitle: 'Alexandria International Airport - ALX',
-      companyLogo: (typeof EAC_B64 !== 'undefined') ? ('data:image/png;base64,' + EAC_B64) : '',
-      contractorRole: 'Main Contractor',
-      contractorName: 'Orascom Construction PLC',
-      contractorLogo: (typeof ORA_B64 !== 'undefined') ? ('data:image/png;base64,' + ORA_B64) : '',
-      systemTitle: 'ALX Airport Keys Management System'
-    });
-    try { localStorage.setItem('kms_setup_complete','1'); } catch(e){}
-  }
+  try {
+    if (getBranding()) return;
+    var hasExisting = localStorage.getItem('kms_keys') || localStorage.getItem('kms_employees') || localStorage.getItem('kms_transactions');
+    if (hasExisting) {
+      var companyLogoUrl = '';
+      var contractorLogoUrl = '';
+      try { if (typeof EAC_B64 === 'string' && EAC_B64) companyLogoUrl = 'data:image/png;base64,' + EAC_B64; } catch(e1){}
+      try { if (typeof ORA_B64 === 'string' && ORA_B64) contractorLogoUrl = 'data:image/png;base64,' + ORA_B64; } catch(e2){}
+      saveBrandingObj({
+        companyName: 'Egyptian Airports Company',
+        companySubtitle: 'Alexandria International Airport - ALX',
+        companyLogo: companyLogoUrl,
+        contractorRole: 'Main Contractor',
+        contractorName: 'Orascom Construction PLC',
+        contractorLogo: contractorLogoUrl,
+        systemTitle: 'ALX Airport Keys Management System'
+      });
+      try { localStorage.setItem('kms_setup_complete','1'); } catch(e3){}
+    }
+  } catch(eOuter) { try { console.error('migrateBrandingIfNeeded failed', eOuter); } catch(e4){} }
 }
 migrateBrandingIfNeeded();
 
