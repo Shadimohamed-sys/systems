@@ -855,7 +855,25 @@ document.getElementById('yr').textContent = new Date().getFullYear();
   var newBtn = document.getElementById('kmsChoiceNew');
   var loadBtn = document.getElementById('kmsChoiceLoad');
   if(!btn||!overlay) return;
-  function openModal(){ overlay.classList.add('open'); }
+  var KMS_MODAL_TXT = {
+    title: {en:'Keys Management System', ar:'نظام إدارة المفاتيح'},
+    sub: {en:"Choose how you'd like to continue", ar:'اختر كيف تريد المتابعة'},
+    newTitle: {en:'New System', ar:'نظام جديد'},
+    newDesc: {en:'Set up your own system from scratch (company name, logo, contractor details)', ar:'ابدأ بإعداد نظامك الخاص من الصفر (اسم الشركة، الشعار، بيانات المقاول)'},
+    loadTitle: {en:'Load Existing Profile', ar:'تحميل ملف بيانات محفوظ'},
+    loadDesc: {en:'Restore a full backup file with all your data and details', ar:'استيراد نسخة احتياطية كاملة تحتوي كل البيانات والتفاصيل'}
+  };
+  function translateModal(){
+    var ar = (document.documentElement.getAttribute('dir')==='rtl') || (document.documentElement.lang==='ar');
+    var lang = ar ? 'ar' : 'en';
+    overlay.querySelector('h3').textContent = KMS_MODAL_TXT.title[lang];
+    overlay.querySelector('.kms-modal-sub').textContent = KMS_MODAL_TXT.sub[lang];
+    newBtn.querySelector('.t').textContent = KMS_MODAL_TXT.newTitle[lang];
+    newBtn.querySelector('.d').textContent = KMS_MODAL_TXT.newDesc[lang];
+    loadBtn.querySelector('.t').textContent = KMS_MODAL_TXT.loadTitle[lang];
+    loadBtn.querySelector('.d').textContent = KMS_MODAL_TXT.loadDesc[lang];
+  }
+  function openModal(){ translateModal(); overlay.classList.add('open'); }
   function closeModal(){ overlay.classList.remove('open'); }
   btn.addEventListener('click', openModal);
   closeBtn.addEventListener('click', closeModal);
