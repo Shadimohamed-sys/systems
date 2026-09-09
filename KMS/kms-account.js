@@ -247,7 +247,10 @@ function daysLeft(a){
   if (!a) return 0;
   var start = a.trialStartedAt && a.trialStartedAt.toMillis ? a.trialStartedAt.toMillis() : Date.now();
   var days = a.trialDays || TRIAL_DAYS;
-  return Math.ceil((start + days * 86400000 - Date.now()) / 86400000);
+  var d = Math.ceil((start + days * 86400000 - Date.now()) / 86400000);
+  if (d > days) d = days;
+  if (d < 0) d = 0;
+  return d;
 }
 function isActive(a){ return !!a && (a.status === 'active' || daysLeft(a) > 0); }
 
@@ -275,12 +278,40 @@ function markSynced(){
   } catch (e) { return false; }
 }
 
+function neutralBrandingIfFresh(){
+  try {
+    if (localStorage.getItem('kms_branding')) return;
+    if (typeof I18N === 'undefined' || !I18N.en || !I18N.ar) return;
+    I18N.en.app_company = 'Your Company Name'; I18N.ar.app_company = 'اسم شركتك';
+    I18N.en.app_subtitle = 'Site / Location'; I18N.ar.app_subtitle = 'الموقع';
+    I18N.en.app_contractor_role = ''; I18N.ar.app_contractor_role = '';
+    I18N.en.app_contractor_name = ''; I18N.ar.app_contractor_name = '';
+    I18N.en.app_title = 'Keys Management System'; I18N.ar.app_title = 'نظام إدارة المفاتيح';
+    if (typeof applyStaticI18n === 'function') applyStaticI18n();
+    var a = document.getElementById('eac-logo'), b2 = document.getElementById('ora-logo');
+    if (a) a.style.display = 'none';
+    if (b2) b2.style.display = 'none';
+  } catch (e) {}
+}
+
+function reconcile(){
+  if (!uid || !syncOn) return;
+  dataCol().get().then(function (snap) {
+    var have = {};
+    snap.forEach(function (d) { have[d.id] = 1; });
+    var ks = dataKeys();
+    for (var i = 0; i < ks.length; i++) if (!have[ks[i]]) queue(ks[i]);
+  }).catch(function () {});
+}
+
 function unlock(){
   syncOn = true;
   document.body.classList.remove('kms-locked');
   var g = $('kms-auth-gate');
   if (g) g.style.display = 'none';
+  neutralBrandingIfFresh();
   injectHeader();
+  setTimeout(reconcile, 3000);
 }
 
 function reloadNow(){
