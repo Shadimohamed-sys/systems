@@ -498,6 +498,10 @@ function boot(){
   firebase.initializeApp(FB);
   auth = firebase.auth();
   db = firebase.firestore();
+  try {
+    var qp = new URLSearchParams(location.search).get('mode');
+    if (qp === 'signup' || qp === 'login') mode = qp;
+  } catch (eQp) {}
   paint();
   $('kag-lang').onclick = function () {
     var next = isAr() ? 'en' : 'ar';
