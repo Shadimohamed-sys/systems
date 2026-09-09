@@ -3791,9 +3791,25 @@ let pendingKey = null;   // barcode of scanned key waiting for employee scan (si
 let batchQueue = [];     // array of key barcodes queued for batch checkout
 let isBatchMode = false; // true when ki-overlay is open for batch employee scan
 
+function kmsResolveCode(v){
+  try {
+    if (keys[v] || employees[v]) return v;
+    var up = v.toUpperCase();
+    if (keys[up] || employees[up]) return up;
+    var lo = v.toLowerCase();
+    if (keys[lo] || employees[lo]) return lo;
+    var ks = Object.keys(keys);
+    for (var i = 0; i < ks.length; i++) if (ks[i].toLowerCase() === lo) return ks[i];
+    var es = Object.keys(employees);
+    for (var j = 0; j < es.length; j++) if (es[j].toLowerCase() === lo) return es[j];
+  } catch (e) {}
+  return v;
+}
+
 function handleScan(raw) {
-  const code = raw.trim();
-  if (!code) return;
+  const typed = raw.trim();
+  if (!typed) return;
+  const code = kmsResolveCode(typed);
   document.getElementById('scan-input').value = '';
 
   if (scanState === 'waiting') {
