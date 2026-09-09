@@ -5,115 +5,13 @@
 </head>
 <body class="kms-locked">
 <style>
-  body.kms-locked > *:not(#site-pin-gate) { display: none !important; }
-  #site-pin-gate {
-    position: fixed; inset: 0; z-index: 99999;
-    background: linear-gradient(160deg, #0B2545 0%, #09182B 100%);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Inter', -apple-system, sans-serif;
-  }
-  body:not(.kms-locked) #site-pin-gate { display: none !important; }
-  .spg-card {
-    background: #FFFFFF; border-radius: 16px; padding: 36px 34px 30px;
-    width: 340px; max-width: 90vw; box-shadow: 0 16px 60px rgba(0,0,0,0.4);
-    text-align: center;
-  }
-  .spg-title {
-    font-family: 'Rajdhani', sans-serif; font-size: 18px; font-weight: 800;
-    letter-spacing: 0.06em; text-transform: uppercase; color: #1A2B40;
-    margin-bottom: 4px;
-  }
-  .spg-sub { font-size: 12px; color: #5A7090; margin-bottom: 22px; }
-  .spg-input {
-    width: 100%; padding: 13px 14px; border-radius: 8px;
-    border: 1.5px solid #D3DEED; background: #F4F7FB; color: #1A2B40;
-    font-family: 'JetBrains Mono', monospace; font-size: 20px; letter-spacing: 0.35em;
-    text-align: center; outline: none; box-sizing: border-box;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  .spg-input:focus { border-color: #1A5FA8; box-shadow: 0 0 0 3px rgba(26,95,168,0.12); }
-  .spg-input.spg-err { border-color: #D93535; animation: spg-shake 0.3s ease; }
-  @keyframes spg-shake {
-    0%,100% { transform: translateX(0); }
-    20% { transform: translateX(-6px); }
-    60% { transform: translateX(6px); }
-  }
-  .spg-btn {
-    width: 100%; margin-top: 14px; padding: 12px; border: none; border-radius: 8px;
-    background: #1A5FA8; color: #fff; font-family: 'Rajdhani', sans-serif;
-    font-size: 14px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
-    cursor: pointer; transition: background 0.15s;
-  }
-  .spg-btn:hover { background: #145090; }
-  .spg-error-msg {
-    margin-top: 12px; font-size: 12px; color: #D93535; font-weight: 600;
-    min-height: 15px;
-  }
+  body.kms-locked > *:not(#kms-auth-gate){display:none !important}
+  body.kms-locked{background:#09182B}
 </style>
-<div id="site-pin-gate">
-  <div class="spg-card">
-    <div class="spg-title">ALX Keys Hub</div>
-    <div class="spg-sub">Enter access PIN to continue</div>
-    <input type="password" inputmode="numeric" maxlength="10" class="spg-input" id="spg-pin-input" placeholder="••••••" autocomplete="off">
-    <button class="spg-btn" onclick="spgAttempt()">Unlock</button>
-    <div class="spg-error-msg" id="spg-error"></div>
-  </div>
-</div>
-<script>
-(function() {
-  var SPG_HASH = "71f780a111c4a0c1e744c31a1ae05299a3bd32467dd60caddf4a961ff793d181";
-  function spgSha256(text) {
-    var enc = new TextEncoder().encode(text);
-    return crypto.subtle.digest('SHA-256', enc).then(function(buf) {
-      return Array.prototype.map.call(new Uint8Array(buf), function(b) {
-        return b.toString(16).padStart(2, '0');
-      }).join('');
-    });
-  }
-  function spgUnlock() {
-    document.body.classList.remove('kms-locked');
-    try { sessionStorage.setItem('kms_site_unlocked', '1'); } catch (e) {}
-  }
-  window.spgAttempt = function() {
-    var input = document.getElementById('spg-pin-input');
-    var val = (input.value || '').trim();
-    var errEl = document.getElementById('spg-error');
-    if (!val) return;
-    if (!window.crypto || !window.crypto.subtle) {
-      // Fallback for non-secure contexts (e.g. plain http): direct compare not possible without hash,
-      // so just deny and inform.
-      errEl.textContent = 'Secure connection required (https) to unlock.';
-      return;
-    }
-    spgSha256(val).then(function(hash) {
-      if (hash === SPG_HASH) {
-        errEl.textContent = '';
-        spgUnlock();
-      } else {
-        errEl.textContent = 'Incorrect PIN. Try again.';
-        input.classList.remove('spg-err'); void input.offsetWidth; input.classList.add('spg-err');
-        input.value = '';
-        input.focus();
-      }
-    });
-  };
-  document.addEventListener('DOMContentLoaded', function() {
-    var input = document.getElementById('spg-pin-input');
-    if (input) {
-      input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') spgAttempt();
-      });
-      var unlocked = false;
-      try { unlocked = sessionStorage.getItem('kms_site_unlocked') === '1'; } catch (e) {}
-      if (unlocked) {
-        spgUnlock();
-      } else {
-        input.focus();
-      }
-    }
-  });
-})();
-</script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="kms-account.js?v=1"></script>
 <title>ALX Keys Hub</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap">
 <style>
