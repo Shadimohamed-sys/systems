@@ -278,10 +278,14 @@ function markSynced(){
   } catch (e) { return false; }
 }
 
-function neutralBrandingIfFresh(){
+function neutralBrandingIfFresh(tries){
   try {
     if (localStorage.getItem('kms_branding')) return;
-    if (typeof I18N === 'undefined' || !I18N.en || !I18N.ar) return;
+    if (typeof I18N === 'undefined' || !I18N.en || !I18N.ar) {
+      var t = tries || 0;
+      if (t < 60) setTimeout(function(){ neutralBrandingIfFresh(t + 1); }, 250);
+      return;
+    }
     I18N.en.app_company = 'Your Company Name'; I18N.ar.app_company = 'اسم شركتك';
     I18N.en.app_subtitle = 'Site / Location'; I18N.ar.app_subtitle = 'الموقع';
     I18N.en.app_contractor_role = ''; I18N.ar.app_contractor_role = '';
@@ -310,6 +314,7 @@ function unlock(){
   var g = $('kms-auth-gate');
   if (g) g.style.display = 'none';
   neutralBrandingIfFresh();
+  setTimeout(function(){ neutralBrandingIfFresh(); }, 1500);
   injectHeader();
   setTimeout(reconcile, 3000);
 }
