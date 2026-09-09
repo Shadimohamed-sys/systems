@@ -3496,7 +3496,11 @@ function saveBrandingObj(b){ try { localStorage.setItem('kms_branding', JSON.str
 function migrateBrandingIfNeeded(){
   try {
     if (getBranding()) return;
-    var hasExisting = localStorage.getItem('kms_keys') || localStorage.getItem('kms_employees') || localStorage.getItem('kms_transactions');
+    var hasExisting = false;
+    try {
+      var rawKeys = localStorage.getItem('kms_keys');
+      if (rawKeys) { var parsedKeys = JSON.parse(rawKeys); hasExisting = !!(parsedKeys && Object.keys(parsedKeys).length > 0); }
+    } catch (eHas) { hasExisting = false; }
     if (hasExisting) {
       var companyLogoUrl = '';
       var contractorLogoUrl = '';
@@ -6877,6 +6881,7 @@ document.getElementById('tangooos-logo').src = 'data:image/png;base64,' + TANGOO
 (function realSeedV1(){
   try {
     if (localStorage.getItem('kms_realseed_v1')) return;
+    if (!keys || Object.keys(keys).length === 0) { localStorage.setItem('kms_realseed_v1', '1'); return; }
     employees = { '831446': { id: '831446', name: 'Shady Mohamed Gaber Ameen', nameAr: '', title: 'Procurement Team Leader', titleAr: '' } };
     Object.keys(keys).forEach(function(bc){
       var k = keys[bc];
