@@ -3541,14 +3541,21 @@ function backfillArabicBrandingIfMissing(){
 }
 
 function applyBranding(){
-  var b = getBranding() || {};
+  var rawB = getBranding();
+  var b = rawB || {};
   try {
     if (typeof I18N !== 'undefined' && I18N.en && I18N.ar) {
-      if (b.companyName) { I18N.en.app_company = b.companyName; I18N.ar.app_company = b.companyNameAr || b.companyName; }
-      if (b.companySubtitle) { I18N.en.app_subtitle = b.companySubtitle; I18N.ar.app_subtitle = b.companySubtitleAr || b.companySubtitle; }
-      if (b.contractorRole) { I18N.en.app_contractor_role = b.contractorRole; I18N.ar.app_contractor_role = b.contractorRoleAr || b.contractorRole; }
-      if (b.contractorName) { I18N.en.app_contractor_name = b.contractorName; I18N.ar.app_contractor_name = b.contractorNameAr || b.contractorName; }
-      if (b.systemTitle) { I18N.en.app_title = b.systemTitle; I18N.ar.app_title = b.systemTitleAr || b.systemTitle; }
+      if (rawB) {
+        I18N.en.app_company = b.companyName || '';
+        I18N.ar.app_company = b.companyNameAr || b.companyName || '';
+        I18N.en.app_subtitle = b.companySubtitle || '';
+        I18N.ar.app_subtitle = b.companySubtitleAr || b.companySubtitle || '';
+        I18N.en.app_contractor_role = b.contractorRole || '';
+        I18N.ar.app_contractor_role = b.contractorRoleAr || b.contractorRole || '';
+        I18N.en.app_contractor_name = b.contractorName || '';
+        I18N.ar.app_contractor_name = b.contractorNameAr || b.contractorName || '';
+        if (b.systemTitle) { I18N.en.app_title = b.systemTitle; I18N.ar.app_title = b.systemTitleAr || b.systemTitle; }
+      }
     }
   } catch(eI18n) {}
   var isAr = (typeof currentLang !== 'undefined' && currentLang === 'ar');
