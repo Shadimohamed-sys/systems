@@ -14,7 +14,7 @@ var FB = {
 
 var TRIAL_DAYS = 30;
 var CHUNK = 700000;
-var SUPPORT = 'shadi@tangooos.com';
+var SUPPORT = 'systems@tangooos.com';
 var SESSION_KEY = 'kms_cloud_session';
 
 var auth = null, db = null, uid = null, mode = 'login', syncOn = false, acct = null;
@@ -44,8 +44,10 @@ var CSS = ''
 + '#kms-auth-gate{position:fixed;inset:0;z-index:2147483000;background:linear-gradient(160deg,#0B2545 0%,#09182B 100%);display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto;font-family:Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif}'
 + 'body:not(.kms-locked) #kms-auth-gate{display:none!important}'
 + 'body.kms-locked > *:not(#kms-auth-gate){display:none!important}'
-+ '.kag-card{background:#fff;border-radius:18px;padding:34px 32px 26px;width:390px;max-width:94vw;box-shadow:0 18px 70px rgba(0,0,0,.45);box-sizing:border-box}'
-+ '.kag-brand{font-size:10px;font-weight:700;letter-spacing:.22em;color:#8FA3BC;text-align:center;text-transform:uppercase}'
++ '.kag-card{position:relative;background:#fff;border-radius:18px;padding:30px 32px 26px;width:390px;max-width:94vw;box-shadow:0 18px 70px rgba(0,0,0,.45);box-sizing:border-box}'
++ '.kag-logo{display:block;margin:6px auto 16px;width:142px;height:auto}'
++ '.kag-lang{position:absolute;top:12px;inset-inline-end:12px;padding:5px 12px;border:1px solid #D3DEED;background:#F7FAFD;border-radius:20px;font-size:11px;font-weight:700;color:#5A7090;cursor:pointer;font-family:inherit;transition:.15s}'
++ '.kag-lang:hover{background:#EDF1F7;color:#1A5FA8;border-color:#B9CBE2}'
 + '.kag-title{font-size:20px;font-weight:700;color:#1A2B40;text-align:center;margin:8px 0 4px}'
 + '.kag-sub{font-size:12.5px;color:#5A7090;text-align:center;margin-bottom:22px;line-height:1.5}'
 + '.kag-tabs{display:flex;background:#EDF1F7;border-radius:10px;padding:4px;margin-bottom:20px}'
@@ -76,8 +78,9 @@ var CSS = ''
 /* ---------------- gate markup ---------------- */
 var HTML = ''
 + '<div class="kag-card">'
++ '  <button class="kag-lang" id="kag-lang"></button>'
++ '  <img class="kag-logo" id="kag-logo" src="tangooos-logo.png" alt="Tangooos Systems">'
 + '  <div id="kag-pane-auth">'
-+ '    <div class="kag-brand">Tangooos Systems</div>'
 + '    <div class="kag-title" id="kag-h1"></div>'
 + '    <div class="kag-sub" id="kag-h2"></div>'
 + '    <div class="kag-tabs">'
@@ -146,6 +149,7 @@ function msg(text, isErr){
 
 /* ---------------- text ---------------- */
 function paint(){
+  $('kag-lang').textContent = isAr() ? 'English' : 'العربية';
   $('kag-h1').textContent = T('Keys Management System', 'نظام إدارة المفاتيح');
   $('kag-h2').textContent = mode === 'signup'
     ? T('Create your account and start a ' + TRIAL_DAYS + '-day free trial.', 'أنشئ حسابك وابدأ فترة تجريبية مجانية لمدة ' + TRIAL_DAYS + ' يوماً.')
@@ -368,6 +372,13 @@ function errText(e){
 }
 
 /* ---------------- actions ---------------- */
+function repaint(){
+  paint();
+  var ex = $('kag-pane-expired'), im = $('kag-pane-import');
+  if (ex && ex.style.display !== 'none') showExpired();
+  else if (im && im.style.display !== 'none') showImport();
+}
+
 function submit(){
   var email = ($('kag-email').value || '').trim();
   var pass = $('kag-pass').value || '';
@@ -457,6 +468,11 @@ function boot(){
   auth = firebase.auth();
   db = firebase.firestore();
   paint();
+  $('kag-lang').onclick = function () {
+    var next = isAr() ? 'en' : 'ar';
+    try { localStorage.setItem('kms_lang', next); } catch (e) {}
+    repaint();
+  };
   $('kag-tab-login').onclick = function () { mode = 'login'; msg(''); paint(); };
   $('kag-tab-signup').onclick = function () { mode = 'signup'; msg(''); paint(); };
   $('kag-submit').onclick = submit;
