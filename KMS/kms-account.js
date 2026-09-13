@@ -106,6 +106,15 @@ var HTML = ''
 + '    <div class="kag-sub" id="kag-exp-s"></div>'
 + '    <button class="kag-btn kag-ghost" id="kag-exp-out"></button>'
 + '  </div>'
++ '  <div id="kag-pane-verify" style="display:none">'
++ '    <div class="kag-big">\u2709</div>'
++ '    <div class="kag-title" id="kag-ver-t"></div>'
++ '    <div class="kag-sub" id="kag-ver-s"></div>'
++ '    <button class="kag-btn" id="kag-ver-go"></button>'
++ '    <button class="kag-btn kag-ghost" id="kag-ver-re"></button>'
++ '    <div class="kag-msg" id="kag-ver-msg"></div>'
++ '    <div class="kag-links"><a id="kag-ver-out"></a></div>'
++ '  </div>'
 + '  <div id="kag-pane-import" style="display:none">'
 + '    <div class="kag-big">\uD83D\uDCE6</div>'
 + '    <div class="kag-title" id="kag-imp-t"></div>'
@@ -127,7 +136,7 @@ function mount(){
 }
 
 function pane(name){
-  var all = ['auth','busy','expired','import'];
+  var all = ['auth','busy','expired','import','verify'];
   for (var i = 0; i < all.length; i++) {
     var e = $('kag-pane-' + all[i]);
     if (e) e.style.display = (all[i] === name) ? '' : 'none';
@@ -377,19 +386,153 @@ function showExpired(){
   $('kag-exp-out').onclick = signOut;
 }
 
+function vmsg(text, isErr){
+  var m = $('kag-ver-msg');
+  if (!m) return;
+  m.textContent = text || '';
+  m.className = 'kag-msg' + (isErr ? ' kag-err' : '');
+}
+
+function sendVerify(user){
+  if (!user) return;
+  user.sendEmailVerification().then(function () {
+    vmsg(T('Confirmation email sent to ' + user.email + '.',
+           'تم إرسال رسالة التأكيد إلى ' + user.email + '.'), false);
+  }).catch(function (e) {
+    var c = (e && e.code) || '';
+    if (c === 'auth/too-many-requests')
+      vmsg(T('An email was just sent. Please wait a minute before asking for another.',
+             'تم إرسال رسالة للتو. برجاء الانتظار دقيقة قبل طلب رسالة أخرى.'), true);
+    else vmsg(errText(e), true);
+  });
+}
+
+function showVerify(user){
+  pane('verify');
+  document.body.classList.add('kms-locked');
+  var g = $('kms-auth-gate'); if (g) g.style.display = '';
+  $('kag-ver-t').textContent = T('Confirm your email address', 'أكّد بريدك الإلكتروني');
+  $('kag-ver-s').textContent = T(
+    'We sent a confirmation link to ' + (user.email || '') + '. Open that link, then come back here and press Continue. If it has not arrived, check your spam folder.',
+    'أرسلنا رابط تأكيد إلى ' + (user.email || '') + '. افتح الرابط ثم عُد إلى هنا واضغط متابعة. وإن لم تصلك الرسالة، تفقّد مجلد الرسائل غير المرغوب فيها.');
+  $('kag-ver-go').textContent = T('I have confirmed — continue', 'لقد أكّدت — متابعة');
+  $('kag-ver-re').textContent = T('Send the email again', 'إعادة إرسال الرسالة');
+  $('kag-ver-out').textContent = T('Use a different email', 'استخدام بريد آخر');
+  if (!window.__kagSent) { window.__kagSent = true; vmsg(''); sendVerify(user); }
+  $('kag-ver-go').onclick = function () {
+    vmsg(T('Checking...', 'جاري التحقق...'), false);
+    user.reload().then(function () {
+      var u = auth.currentUser;
+      if (u && u.emailVerified) { window.__kagSent = false; onUser(u); }
+      else vmsg(T('Not confirmed yet. Open the link in the email, then press Continue.',
+                  'لم يتم التأكيد بعد. افتح الرابط الموجود في الرسالة ثم اضغط متابعة.'), true);
+    }).catch(function (e) { vmsg(errText(e), true); });
+  };
+  $('kag-ver-re').onclick = function () { sendVerify(auth.currentUser || user); };
+  $('kag-ver-out').onclick = function () {
+    window.__kagSent = false;
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
+    auth.signOut();
+  };
+}
+
+function hasLocalKeys(){
+  try { return (localStorage.getItem('kms_keys') || '').length > 5; } catch (e) { return false; }
+}
+
 function showImport(){
   pane('import');
-  $('kag-imp-t').textContent = T('Existing data found', 'تم العثور على بيانات');
-  $('kag-imp-s').textContent = T(
-    'This device already has keys data saved locally. Do you want to import it into your new account, or start with an empty system?',
-    'يوجد على هذا الجهاز بيانات مفاتيح محفوظة محلياً. هل تريد استيرادها إلى حسابك الجديد أم البدء بنظام فارغ؟');
-  $('kag-imp-yes').textContent = T('Import it into my account', 'استيراد البيانات إلى حسابي');
-  $('kag-imp-no').textContent = T('Start with an empty system', 'البدء بنظام فارغ');
+  var box = $('kag-pane-import');
+  var local = hasLocalKeys();
+
+  $('kag-imp-t').textContent = T('Set up your system', 'إعداد نظامك');
+  $('kag-imp-s').textContent = local
+    ? T('Choose how to start: restore a backup file exported from a Tangooos KMS system, carry over the key data already saved in this browser, or begin with an empty system.',
+        'اختر كيف تبدأ: استعادة ملف نسخة احتياطية تم تصديره من نظام Tangooos KMS، أو نقل بيانات المفاتيح المحفوظة في هذا المتصفح، أو البدء بنظام فارغ.')
+    : T('Choose how to start: restore a backup file (.json) exported from a Tangooos KMS system, or begin with an empty system and add your keys later.',
+        'اختر كيف تبدأ: استعادة ملف نسخة احتياطية (.json) تم تصديره من نظام Tangooos KMS، أو البدء بنظام فارغ وإضافة المفاتيح لاحقاً.');
+
+  var fi = $('kag-imp-file');
+  if (!fi) {
+    fi = document.createElement('input');
+    fi.type = 'file';
+    fi.id = 'kag-imp-file';
+    fi.accept = '.json,application/json';
+    fi.style.display = 'none';
+    box.appendChild(fi);
+    fi.onchange = function () { handleBackupFile(fi); };
+  }
+  var note = $('kag-imp-note');
+  if (!note) {
+    note = document.createElement('div');
+    note.id = 'kag-imp-note';
+    note.className = 'kag-msg';
+    box.appendChild(note);
+  }
+  note.textContent = '';
+  note.className = 'kag-msg';
+
+  $('kag-imp-yes').textContent = T('Restore from a backup file', 'استعادة من ملف نسخة احتياطية');
   $('kag-imp-yes').onclick = function () {
-    busy(T('Uploading your data...', 'جاري رفع البيانات...'), T('This may take a moment.', 'قد يستغرق ذلك لحظات.'));
-    pushAllLocal().then(reloadNow).catch(function (e) { pane('auth'); msg(errText(e), true); });
+    note.textContent = '';
+    note.className = 'kag-msg';
+    fi.value = '';
+    fi.click();
   };
-  $('kag-imp-no').onclick = function () { clearLocalData(); reloadNow(); };
+
+  var dev = $('kag-imp-dev');
+  if (local) {
+    if (!dev) {
+      dev = document.createElement('button');
+      dev.className = 'kag-btn kag-ghost';
+      dev.id = 'kag-imp-dev';
+      box.insertBefore(dev, $('kag-imp-no'));
+    }
+    dev.style.display = '';
+    dev.textContent = T('Use the data already in this browser', 'استخدام البيانات الموجودة في هذا المتصفح');
+    dev.onclick = function () {
+      busy(T('Uploading your data...', 'جاري رفع البيانات...'), T('This may take a moment.', 'قد يستغرق ذلك لحظات.'));
+      pushAllLocal().then(reloadNow).catch(function (e) { pane('auth'); msg(errText(e), true); });
+    };
+  } else if (dev) {
+    dev.style.display = 'none';
+  }
+
+  $('kag-imp-no').textContent = T('Start with an empty system', 'البدء بنظام فارغ');
+  $('kag-imp-no').onclick = function () {
+    clearLocalData();
+    try { localStorage.setItem('kms_started', '1'); } catch (e) {}
+    busy(T('Preparing your system...', 'جاري تجهيز نظامك...'), T('One moment please.', 'لحظة من فضلك.'));
+    pushAllLocal().then(reloadNow).catch(function () { reloadNow(); });
+  };
+}
+
+function handleBackupFile(input){
+  var file = input.files && input.files[0];
+  if (!file) return;
+  var note = $('kag-imp-note');
+  function nmsg(t, isErr){ if (!note) return; note.textContent = t; note.className = 'kag-msg' + (isErr ? ' kag-err' : ''); }
+  var bad = T('That file is not a Tangooos KMS backup. Export one from System Setup → Export Full Backup.',
+              'هذا الملف ليس نسخة احتياطية من Tangooos KMS. يمكنك تصدير نسخة من إعداد النظام ← تصدير نسخة احتياطية كاملة.');
+  nmsg(T('Reading file...', 'جاري قراءة الملف...'), false);
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    var data = null;
+    try { data = JSON.parse(e.target.result); } catch (err) { data = null; }
+    if (!data || typeof data !== 'object') { nmsg(bad, true); return; }
+    var names = [];
+    for (var k in data) { if (Object.prototype.hasOwnProperty.call(data, k) && k.indexOf('kms_') === 0) names.push(k); }
+    if (!names.length) { nmsg(bad, true); return; }
+    clearLocalData();
+    for (var i = 0; i < names.length; i++) {
+      var v = data[names[i]];
+      try { localStorage.setItem(names[i], (typeof v === 'string') ? v : JSON.stringify(v)); } catch (er) {}
+    }
+    busy(T('Restoring your data...', 'جاري استعادة بياناتك...'), T('This may take a moment.', 'قد يستغرق ذلك لحظات.'));
+    pushAllLocal().then(reloadNow).catch(function (er) { pane('auth'); msg(errText(er), true); });
+  };
+  reader.onerror = function () { nmsg(T('Could not read that file.', 'تعذّر قراءة الملف.'), true); };
+  reader.readAsText(file);
 }
 
 /* ---------------- errors ---------------- */
@@ -410,8 +553,9 @@ function errText(e){
 /* ---------------- actions ---------------- */
 function repaint(){
   paint();
-  var ex = $('kag-pane-expired'), im = $('kag-pane-import');
+  var ex = $('kag-pane-expired'), im = $('kag-pane-import'), vf = $('kag-pane-verify');
   if (ex && ex.style.display !== 'none') showExpired();
+  else if (vf && vf.style.display !== 'none' && auth.currentUser) showVerify(auth.currentUser);
   else if (im && im.style.display !== 'none') showImport();
 }
 
@@ -454,6 +598,7 @@ function onUser(user){
     return;
   }
   uid = user.uid;
+  if (!user.emailVerified) { showVerify(user); return; }
   var already = false;
   try { already = sessionStorage.getItem(SESSION_KEY) === uid; } catch (e) {}
   if (already) {
@@ -475,7 +620,7 @@ function onUser(user){
       var localKeys = '';
       try { localKeys = localStorage.getItem('kms_keys') || ''; } catch (e) {}
       var hasLocal = localKeys.length > 5;
-      if (!cloudKeys.length && hasLocal) { showImport(); return null; }
+      if (!cloudKeys.length) { showImport(); return null; }
       clearLocalData();
       for (var i = 0; i < cloudKeys.length; i++) {
         try { localStorage.setItem(cloudKeys[i], cloud[cloudKeys[i]]); } catch (e) {}
