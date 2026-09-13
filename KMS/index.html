@@ -12,7 +12,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>document.write('<scr'+'ipt src="kms-account.js?t=' + Math.floor(Date.now()/300000) + '"><\/scr'+'ipt>');</script>
-<title>ALX Keys Hub</title>
+<title>Tangooos KMS</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&family=Noto+Naskh+Arabic:wght@400;600;700&display=swap">
 <style>
 /* ─── Token System ─── */
@@ -1882,20 +1882,20 @@ body {
   </div>
   <div class="header-divider"></div>
   <div class="header-title">
-    <span class="header-title-company" data-i18n="app_company">Egyptian Airports Company</span>
-    <span data-i18n="app_subtitle">Alexandria International Airport - ALX</span>
+    <span class="header-title-company" data-i18n="app_company">Your Company Name</span>
+    <span data-i18n="app_subtitle">Your Facility</span>
   </div>
   <div class="header-divider"></div>
   <div class="header-contractor">
-    <img id="ora-logo" alt="Orascom Construction PLC">
+    <img id="ora-logo" alt="">
     <div class="header-contractor-text">
       <span class="header-contractor-role" data-i18n="app_contractor_role">Main Contractor</span>
-      <span class="header-contractor-name" data-i18n="app_contractor_name">Orascom Construction PLC</span>
+      <span class="header-contractor-name" data-i18n="app_contractor_name"></span>
     </div>
   </div>
   <div class="header-divider"></div>
   <div class="header-app-title">
-    <span class="header-title-main" data-i18n="app_title">ALX Airport Keys Management System</span>
+    <span class="header-title-main" data-i18n="app_title">Keys Management System</span>
   </div>
   <div class="header-right">
     <div class="clock" id="clock">--:--:--</div>
@@ -2244,7 +2244,7 @@ body {
           <div class="form-row" style="gap:6px;">
             <label class="form-label" data-i18n="lbl_manager_badge">Manager ID badge (unlocks this panel)</label>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input class="form-input" id="mgr-id-setting" placeholder="e.g. 831446" data-i18n-ph="ph_manager_id" style="flex:1;font-family:var(--font-mono);">
+              <input class="form-input" id="mgr-id-setting" placeholder="e.g. 10234" data-i18n-ph="ph_manager_id" style="flex:1;font-family:var(--font-mono);">
               <button class="btn-sm primary" onclick="saveManagerId()" style="white-space:nowrap;" data-i18n="btn_save_id">💾 Save ID</button>
             </div>
             <div style="font-size:11px;color:var(--text-muted);" data-i18n="manager_badge_desc">Scanning this badge (or entering the PIN) opens Manage Keys &amp; Employees.</div>
@@ -2680,11 +2680,11 @@ var TESS_ARA_TRAINEDDATA_GZ_B64 = "H4sICC5v42QAA2FyYS50cmFpbmVkZGF0YQDEvIWXHEeWP
 // ══════════════════════════════════
 var I18N = {
 en: {
-  app_title: "ALX Airport Keys Management System",
-  app_subtitle: "Alexandria International Airport - ALX",
-  app_company: "Egyptian Airports Company",
-  app_contractor_role: "Main Contractor",
-  app_contractor_name: "Orascom Construction PLC",
+  app_title: "Keys Management System",
+  app_subtitle: "Your Facility",
+  app_company: "Your Company Name",
+  app_contractor_role: "",
+  app_contractor_name: "",
   btn_manage_keys: "⚙ Manage Keys",
   theme_toggle_title: "Toggle light / dark",
   lang_toggle_btn: "🌐 العربية",
@@ -2788,7 +2788,7 @@ en: {
   btn_save_pin: "💾 Save PIN",
   pin_saved_msg: "✓ PIN saved",
   lbl_manager_badge: "Manager ID badge (unlocks this panel)",
-  ph_manager_id: "e.g. 831446",
+  ph_manager_id: "e.g. 10234",
   btn_save_id: "💾 Save ID",
   manager_badge_desc: "Scanning this badge (or entering the PIN) opens Manage Keys & Employees.",
   lbl_export_folder: "Employees ID Photos folder (auto-save)",
@@ -3037,11 +3037,11 @@ en: {
   btn_remove: "✕ Remove"
 },
 ar: {
-  app_title: "نظام إدارة مفاتيح مطار الإسكندرية",
-  app_subtitle: "مطار الإسكندرية الدولي - ALX",
-  app_company: "الشركة المصرية للمطارات",
-  app_contractor_role: "المقاول الرئيسى",
-  app_contractor_name: "شركة أوراسكوم للانشاءات",
+  app_title: "نظام إدارة المفاتيح",
+  app_subtitle: "منشأتك",
+  app_company: "اسم شركتك",
+  app_contractor_role: "",
+  app_contractor_name: "",
   btn_manage_keys: "⚙ إدارة المفاتيح",
   theme_toggle_title: "تبديل الوضع الفاتح / الداكن",
   lang_toggle_btn: "🌐 English",
@@ -3145,7 +3145,7 @@ ar: {
   btn_save_pin: "💾 حفظ الرمز السري",
   pin_saved_msg: "✓ تم حفظ الرمز السري",
   lbl_manager_badge: "بطاقة هوية المدير (لفتح هذه اللوحة)",
-  ph_manager_id: "مثال: 831446",
+  ph_manager_id: "مثال: 10234",
   btn_save_id: "💾 حفظ الرقم",
   manager_badge_desc: "مسح هذه البطاقة (أو إدخال الرمز السري) يفتح إدارة المفاتيح والموظفين.",
   lbl_export_folder: "مجلد صور هويات الموظفين (حفظ تلقائي)",
@@ -3570,7 +3570,7 @@ function applyBranding(){
   var oraImg = document.getElementById('ora-logo');
   if (eacImg) { if (b.companyLogo) { eacImg.src = b.companyLogo; eacImg.style.display=''; } else { eacImg.removeAttribute('src'); eacImg.style.display='none'; } }
   if (oraImg) { if (b.contractorLogo) { oraImg.src = b.contractorLogo; oraImg.style.display=''; } else { oraImg.removeAttribute('src'); oraImg.style.display='none'; } }
-  if (b.systemTitle) { try { document.title = isAr ? (b.systemTitleAr || b.systemTitle) : b.systemTitle; } catch(e){} }
+  if (b.systemTitle) { try { document.title = (isAr ? (b.systemTitleAr || b.systemTitle) : b.systemTitle) || 'Tangooos KMS'; } catch(e){} }
 }
 
 function kmsFileToDataUrl(file, cb){
@@ -5930,8 +5930,17 @@ function aiExtractFields(dataUrl) {
 // ══════════════════════════════════
 //  MANAGER GATE  +  EMPLOYEE CAPTURE
 // ══════════════════════════════════
-var DEFAULT_MANAGER_ID = '831446';
-function getManagerId() { return load('kms_manager_id', DEFAULT_MANAGER_ID) || DEFAULT_MANAGER_ID; }
+var LEGACY_MANAGER_ID = '831446';
+(function migrateManagerId(){
+  try {
+    if (localStorage.getItem('kms_manager_id') !== null) return;
+    var raw = localStorage.getItem('kms_keys');
+    var existing = false;
+    if (raw) { var p = JSON.parse(raw); existing = !!(p && Object.keys(p).length > 0); }
+    localStorage.setItem('kms_manager_id', JSON.stringify(existing ? LEGACY_MANAGER_ID : ''));
+  } catch (e) {}
+})();
+function getManagerId() { return load('kms_manager_id', '') || ''; }
 function saveManagerId() {
   var v = (document.getElementById('mgr-id-setting').value || '').trim();
   if (!v) { showToast(tr('toast_enter_manager_badge'), 'warning'); return; }
@@ -6903,9 +6912,9 @@ document.getElementById('tangooos-logo').src = 'data:image/png;base64,' + TANGOO
 // ══════════════════════════════════
 (function realSeedV1(){
   try {
-    if (localStorage.getItem('kms_realseed_v1')) return;
+    localStorage.setItem('kms_realseed_v1', '1'); return; /* retired: no seed data ships with the product */
     if (!keys || Object.keys(keys).length === 0) { localStorage.setItem('kms_realseed_v1', '1'); return; }
-    employees = { '831446': { id: '831446', name: 'Shady Mohamed Gaber Ameen', nameAr: '', title: 'Procurement Team Leader', titleAr: '' } };
+    employees = employees || {};
     Object.keys(keys).forEach(function(bc){
       var k = keys[bc];
       k.status = 'IN'; k.currentEmpId = null; k.currentEmpName = null; k.checkoutTime = null;
