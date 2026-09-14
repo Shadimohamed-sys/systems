@@ -274,6 +274,28 @@ body {
   overflow-y: auto;
 }
 
+/* Wide screens: put the key board and the transaction log side by side, so the
+   log is always visible without scrolling past every key. Each column scrolls
+   on its own. Below 1200px they stack as before. */
+@media (min-width: 1200px) {
+  .main > .right-panel { flex-direction: row; align-items: stretch; overflow: hidden; }
+  .main > .right-panel > .card {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .main > .right-panel > .card:first-child { flex: 1.5 1 0; }
+  .main > .right-panel > .card:last-child { min-width: 430px; }
+  .main > .right-panel > .card > .card-header { flex: 0 0 auto; }
+  .main > .right-panel > .card > .card-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
 /* ─── Cards ─── */
 .card {
   background: var(--surface);
