@@ -5953,6 +5953,13 @@ var _mgrPending = null;
 
 function openAdminSecure() {
   if (_adminUnlocked) { openAdmin(); return; }
+  // First run: no manager badge and no admin PIN have been set yet, so there is
+  // nothing to check against. Let the owner in to set them, then it locks.
+  if (!getManagerId() && !load('kms_admin_pin', '')) {
+    _adminUnlocked = true;
+    openAdmin();
+    return;
+  }
   _mgrPending = function() { openAdmin(); };
   var idEl = document.getElementById('mgr-id-input'), pinEl = document.getElementById('mgr-pin-input'), err = document.getElementById('mgr-error');
   if (idEl) idEl.value = ''; if (pinEl) pinEl.value = ''; if (err) err.style.display = 'none';
