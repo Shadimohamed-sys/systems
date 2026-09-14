@@ -2242,6 +2242,14 @@ body {
           </div>
         </div>
         <div class="form-row">
+          <label class="form-label" data-i18n="lbl_nat_id">National ID (14 digits)</label>
+          <input class="form-input" id="emp-nat-id" inputmode="numeric" maxlength="18"
+                 placeholder="14-digit national ID" data-i18n-ph="ph_nat_id"
+                 style="font-family:var(--font-mono);letter-spacing:.04em"
+                 oninput="natIdFeedback()">
+          <div id="emp-nat-id-msg" style="font-size:11.5px;margin-top:4px;min-height:15px"></div>
+        </div>
+        <div class="form-row">
           <label class="form-label" data-i18n="lbl_job_title_en">Job Title (English)</label>
           <input class="form-input" id="emp-title" placeholder="e.g. Procurement Team Leader" data-i18n-ph="ph_job_title">
         </div>
@@ -2725,6 +2733,8 @@ var I18N = {
 en: {
   app_title: "Keys Management System",
   app_subtitle: "Your Facility",
+  lbl_nat_id: "National ID (14 digits)",
+  ph_nat_id: "14-digit national ID",
   app_company: "Your Company Name",
   app_contractor_role: "",
   app_contractor_name: "",
@@ -3082,6 +3092,8 @@ en: {
 ar: {
   app_title: "نظام إدارة المفاتيح",
   app_subtitle: "منشأتك",
+  lbl_nat_id: "الرقم القومي (14 رقماً)",
+  ph_nat_id: "الرقم القومي المكوَّن من 14 رقماً",
   app_company: "اسم شركتك",
   app_contractor_role: "",
   app_contractor_name: "",
@@ -3841,6 +3853,65 @@ let pendingKey = null;   // barcode of scanned key waiting for employee scan (si
 let batchQueue = [];     // array of key barcodes queued for batch checkout
 let isBatchMode = false; // true when ki-overlay is open for batch employee scan
 
+// ══════════════════════════════════
+//  EGYPTIAN NATIONAL ID
+//  14 digits: C YYMMDD GG SSSS X
+//  C  century (2 = 1900s, 3 = 2000s)   GG governorate of registration
+//  SSSS serial (odd = male)            X  check digit
+// ══════════════════════════════════
+var EGY_GOV = {
+  '01': ['Cairo', 'القاهرة'], '02': ['Alexandria', 'الإسكندرية'], '03': ['Port Said', 'بورسعيد'],
+  '04': ['Suez', 'السويس'], '11': ['Damietta', 'دمياط'], '12': ['Dakahlia', 'الدقهلية'],
+  '13': ['Sharqia', 'الشرقية'], '14': ['Qalyubia', 'القليوبية'], '15': ['Kafr El Sheikh', 'كفر الشيخ'],
+  '16': ['Gharbia', 'الغربية'], '17': ['Monufia', 'المنوفية'], '18': ['Beheira', 'البحيرة'],
+  '19': ['Ismailia', 'الإسماعيلية'], '21': ['Giza', 'الجيزة'], '22': ['Beni Suef', 'بني سويف'],
+  '23': ['Fayoum', 'الفيوم'], '24': ['Minya', 'المنيا'], '25': ['Assiut', 'أسيوط'],
+  '26': ['Sohag', 'سوهاج'], '27': ['Qena', 'قنا'], '28': ['Aswan', 'أسوان'],
+  '29': ['Luxor', 'الأقصر'], '31': ['Red Sea', 'البحر الأحمر'], '32': ['New Valley', 'الوادي الجديد'],
+  '33': ['Matrouh', 'مطروح'], '34': ['North Sinai', 'شمال سيناء'], '35': ['South Sinai', 'جنوب سيناء'],
+  '88': ['Born abroad', 'مولود بالخارج']
+};
+
+function egyIdDigits(v){ return String(v == null ? '' : v).replace(/[^0-9]/g, ''); }
+
+function egyIdInfo(v){
+  var s = egyIdDigits(v);
+  if (!s) return { empty: true, ok: false, reason: 'empty' };
+  if (s.length !== 14) return { ok: false, reason: 'length', digits: s };
+  var c = +s.charAt(0);
+  if (c !== 2 && c !== 3) return { ok: false, reason: 'century', digits: s };
+  var year = (c === 2 ? 1900 : 2000) + parseInt(s.substr(1, 2), 10);
+  var mon  = parseInt(s.substr(3, 2), 10);
+  var day  = parseInt(s.substr(5, 2), 10);
+  var d = new Date(year, mon - 1, day);
+  if (mon < 1 || mon > 12 || day < 1 ||
+      d.getFullYear() !== year || d.getMonth() !== mon - 1 || d.getDate() !== day) {
+    return { ok: false, reason: 'date', digits: s };
+  }
+  var W = [2,7,6,5,4,3,2,7,6,5,4,3,2], sum = 0;
+  for (var i = 0; i < 13; i++) sum += (+s.charAt(i)) * W[i];
+  var chk = (11 - (sum % 11)) % 11;
+  if (chk > 9 || chk !== (+s.charAt(13))) return { ok: false, reason: 'checksum', digits: s };
+  var gov = EGY_GOV[s.substr(7, 2)] || null;
+  function p2(n){ return (n < 10 ? '0' : '') + n; }
+  return {
+    ok: true, digits: s,
+    birth: year + '-' + p2(mon) + '-' + p2(day),
+    govEn: gov ? gov[0] : '', govAr: gov ? gov[1] : ''
+  };
+}
+
+function egyIdOwner(v, skipKey){
+  var s = egyIdDigits(v);
+  if (s.length !== 14) return null;
+  var ids = Object.keys(employees);
+  for (var i = 0; i < ids.length; i++) {
+    if (skipKey && ids[i] === skipKey) continue;
+    if (egyIdDigits(employees[ids[i]].natId) === s) return ids[i];
+  }
+  return null;
+}
+
 function kmsResolveCode(v){
   try {
     if (keys[v] || employees[v]) return v;
@@ -3852,6 +3923,9 @@ function kmsResolveCode(v){
     for (var i = 0; i < ks.length; i++) if (ks[i].toLowerCase() === lo) return ks[i];
     var es = Object.keys(employees);
     for (var j = 0; j < es.length; j++) if (es[j].toLowerCase() === lo) return es[j];
+    // a 14-digit national ID finds the same person as their badge
+    var owner = egyIdOwner(v);
+    if (owner) return owner;
   } catch (e) {}
   return v;
 }
@@ -4478,8 +4552,11 @@ function closeEmpList() {
 function renderEmpList() {
   var q = (document.getElementById('el-search').value || '').toLowerCase();
   var entries = Object.entries(employees);
+  var qDigits = q.replace(/[^0-9]/g, '');
   var filtered = q ? entries.filter(function([id, e]) {
-    return e.name.toLowerCase().includes(q) || id.toLowerCase().includes(q);
+    if (e.name.toLowerCase().includes(q) || id.toLowerCase().includes(q)) return true;
+    if (qDigits && e.natId && egyIdDigits(e.natId).indexOf(qDigits) !== -1) return true;
+    return false;
   }) : entries.slice();
 
   var list  = document.getElementById('el-list');
@@ -4574,21 +4651,83 @@ function deleteKey(bc) {
   showToast(tr('toast_key_removed'), 'warning');
 }
 
+function natIdFeedback(){
+  var el  = document.getElementById('emp-nat-id');
+  var msg = document.getElementById('emp-nat-id-msg');
+  if (!el || !msg) return;
+  var isAr = (typeof currentLang !== 'undefined' && currentLang === 'ar');
+  var info = egyIdInfo(el.value);
+  if (info.empty) { msg.textContent = ''; el.style.borderColor = ''; return; }
+  if (info.ok) {
+    var owner = egyIdOwner(el.value);
+    if (owner) {
+      el.style.borderColor = 'var(--status-out, #c0392b)';
+      msg.style.color = 'var(--status-out, #c0392b)';
+      msg.textContent = isAr
+        ? 'هذا الرقم القومي مسجَّل بالفعل لـ ' + (employees[owner].nameAr || employees[owner].name)
+        : 'Already registered to ' + employees[owner].name;
+      return;
+    }
+    el.style.borderColor = 'var(--status-in, #1e8e5a)';
+    msg.style.color = 'var(--status-in, #1e8e5a)';
+    msg.textContent = isAr
+      ? '\u2713 صالح \u00b7 تاريخ الميلاد ' + info.birth + (info.govAr ? ' \u00b7 ' + info.govAr : '')
+      : '\u2713 Valid \u00b7 born ' + info.birth + (info.govEn ? ' \u00b7 ' + info.govEn : '');
+    return;
+  }
+  el.style.borderColor = 'var(--status-out, #c0392b)';
+  msg.style.color = 'var(--status-out, #c0392b)';
+  var m = {
+    length:   ['Must be exactly 14 digits', 'يجب أن يكون 14 رقماً بالضبط'],
+    century:  ['Must start with 2 or 3', 'يجب أن يبدأ بـ 2 أو 3'],
+    date:     ['The birth date in this number is not a real date', 'تاريخ الميلاد داخل هذا الرقم غير صحيح'],
+    checksum: ['Check digit does not match - one of the digits is wrong', 'رقم التحقق غير مطابق - أحد الأرقام خطأ']
+  }[info.reason] || ['Not a valid national ID', 'رقم قومي غير صالح'];
+  msg.textContent = isAr ? m[1] : m[0];
+}
+
 function addEmployee() {
   const name    = document.getElementById('emp-name').value.trim();
-  const id      = document.getElementById('emp-id').value.trim();
   const nameAr  = document.getElementById('emp-name-ar').value.trim();
   const title   = document.getElementById('emp-title').value.trim();
   const titleAr = document.getElementById('emp-title-ar').value.trim();
+  const natEl   = document.getElementById('emp-nat-id');
+  const natRaw  = natEl ? natEl.value.trim() : '';
+  const natInfo = egyIdInfo(natRaw);
+  const isAr2   = (typeof currentLang !== 'undefined' && currentLang === 'ar');
+
+  if (natRaw && !natInfo.ok) {
+    showToast(isAr2 ? 'الرقم القومي غير صحيح - راجع الأرقام' : 'That national ID is not valid - check the digits', 'error');
+    if (natEl) natEl.focus();
+    return;
+  }
+  const natId = natInfo.ok ? natInfo.digits : '';
+  // the national ID can serve as the record number when there is no badge yet
+  const id = document.getElementById('emp-id').value.trim() || natId;
+
   if (!name) { showToast(tr('toast_enter_name'), 'error'); document.getElementById('emp-name').focus(); return; }
-  if (!id) { showToast(tr('toast_enter_emp_id'), 'error'); document.getElementById('emp-id').focus(); return; }
+  if (!id) {
+    showToast(isAr2 ? 'أدخل رقم البطاقة أو الرقم القومي' : 'Enter a badge number or a national ID', 'error');
+    document.getElementById('emp-id').focus();
+    return;
+  }
   if (employees[id]) { showToast(tr('toast_emp_id_registered'), 'error'); return; }
-  employees[id] = { name, id, nameAr: nameAr || '', title: title || '', titleAr: titleAr || '' };
+  if (natId) {
+    var dupe = egyIdOwner(natId);
+    if (dupe) {
+      showToast(isAr2
+        ? 'هذا الرقم القومي مسجَّل بالفعل لـ ' + (employees[dupe].nameAr || employees[dupe].name)
+        : 'That national ID is already registered to ' + employees[dupe].name, 'error');
+      return;
+    }
+  }
+  employees[id] = { name, id, natId: natId, nameAr: nameAr || '', title: title || '', titleAr: titleAr || '' };
   save('kms_employees', employees);
   if (_pendingEmpPhoto) { idbPutPhoto(id, _pendingEmpPhoto).catch(function(){}); _pendingEmpPhoto = null; var _pv = document.getElementById('emp-photo-preview'); if (_pv) { _pv.style.display='none'; _pv.innerHTML=''; } }
-  ['emp-name','emp-id','emp-name-ar','emp-title','emp-title-ar'].forEach(function(fid){
-    var el = document.getElementById(fid); if (el) { el.value = ''; el.classList.remove('ocr-filled'); }
+  ['emp-name','emp-id','emp-nat-id','emp-name-ar','emp-title','emp-title-ar'].forEach(function(fid){
+    var el = document.getElementById(fid); if (el) { el.value = ''; el.classList.remove('ocr-filled'); el.style.borderColor = ''; }
   });
+  var _nm = document.getElementById('emp-nat-id-msg'); if (_nm) _nm.textContent = '';
   renderAdminEmps();
   if (document.getElementById('el-overlay').classList.contains('open')) renderEmpList();
   showToast(tr('toast_employee_added', {name: name}), 'success');
