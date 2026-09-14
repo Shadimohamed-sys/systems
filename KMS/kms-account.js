@@ -266,19 +266,26 @@ function daysLeft(a){
 }
 function isActive(a){ return !!a && (a.status === 'active' || daysLeft(a) > 0); }
 
+function pendingCompany(){
+  try { return localStorage.getItem('tgs_signup_company') || ''; } catch (e) { return ''; }
+}
+
 function loadAccount(user){
   var ref = db.collection('users').doc(user.uid);
   return ref.get().then(function (snap) {
     if (snap.exists) return snap.data();
     var seed = {
       email: user.email || '',
-      companyName: (window.__kagPendingCompany || ''),
+      companyName: (window.__kagPendingCompany || pendingCompany()),
       status: 'trial',
       trialDays: TRIAL_DAYS,
       trialStartedAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-    return ref.set(seed).then(function () { return ref.get(); }).then(function (s) { return s.data(); });
+    return ref.set(seed).then(function () {
+      try { localStorage.removeItem('tgs_signup_company'); } catch (e) {}
+      return ref.get();
+    }).then(function (s) { return s.data(); });
   });
 }
 
@@ -588,6 +595,7 @@ function submit(){
   $('kag-submit').disabled = true;
   $('kag-submit').textContent = T('Please wait...', 'برجاء الانتظار...');
   window.__kagPendingCompany = company;
+  try { if (company) localStorage.setItem('tgs_signup_company', company); } catch (e) {}
   var p = (mode === 'signup')
     ? auth.createUserWithEmailAndPassword(email, pass)
     : auth.signInWithEmailAndPassword(email, pass);
