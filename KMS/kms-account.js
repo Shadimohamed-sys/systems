@@ -45,7 +45,7 @@ var CSS = ''
 + 'body:not(.kms-locked) #kms-auth-gate{display:none!important}'
 + 'body.kms-locked > *:not(#kms-auth-gate){display:none!important}'
 + '.kag-card{position:relative;background:#fff;border-radius:18px;padding:30px 32px 26px;width:390px;max-width:94vw;box-shadow:0 18px 70px rgba(0,0,0,.45);box-sizing:border-box}'
-+ '.kag-logo{display:block;margin:6px auto 16px;width:142px;height:auto}'
++ '.kag-logo{display:block;margin:6px auto 18px;width:176px;height:auto}'
 + '.kag-lang{position:absolute;top:12px;inset-inline-end:12px;padding:5px 12px;border:1px solid #D3DEED;background:#F7FAFD;border-radius:20px;font-size:11px;font-weight:700;color:#5A7090;cursor:pointer;font-family:inherit;transition:.15s}'
 + '.kag-lang:hover{background:#EDF1F7;color:#1A5FA8;border-color:#B9CBE2}'
 + '.kag-title{font-size:20px;font-weight:700;color:#1A2B40;text-align:center;margin:8px 0 4px}'
@@ -60,6 +60,9 @@ var CSS = ''
 + '.kag-btn{width:100%;margin-top:8px;padding:13px;border:none;border-radius:9px;background:#1A5FA8;color:#fff;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:.15s}'
 + '.kag-btn:hover:not(:disabled){background:#145090}'
 + '.kag-btn:disabled{opacity:.6;cursor:default}'
++ '.kag-btn.kag-busy{position:relative;color:transparent !important}'
++ '.kag-btn.kag-busy::after{content:"";position:absolute;top:50%;left:50%;width:17px;height:17px;margin:-9px 0 0 -9px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:kagspin .7s linear infinite}'
++ '.kag-btn.kag-ghost.kag-busy::after{border-color:rgba(26,43,64,.22);border-top-color:#1A2B40}'
 + '.kag-btn.kag-ghost{background:#EDF1F7;color:#1A2B40;margin-top:9px}'
 + '.kag-btn.kag-ghost:hover:not(:disabled){background:#DFE7F2}'
 + '.kag-msg{margin-top:12px;font-size:12.5px;font-weight:600;color:#15A86A;text-align:center;min-height:16px;line-height:1.45}'
@@ -79,7 +82,7 @@ var CSS = ''
 var HTML = ''
 + '<div class="kag-card">'
 + '  <button class="kag-lang" id="kag-lang"></button>'
-+ '  <img class="kag-logo" id="kag-logo" src="tangooos-logo.png" alt="Tangooos Systems">'
++ '  <img class="kag-logo" id="kag-logo" src="tangooos-logo-gold.png" alt="Tangooos Systems">'
 + '  <div id="kag-pane-auth">'
 + '    <div class="kag-title" id="kag-h1"></div>'
 + '    <div class="kag-sub" id="kag-h2"></div>'
@@ -386,6 +389,14 @@ function showExpired(){
   $('kag-exp-out').onclick = signOut;
 }
 
+var SENDER = 'noreply@tangooos-kms.firebaseapp.com';
+
+function busyBtn(btn, on){
+  if (!btn) return;
+  btn.disabled = !!on;
+  if (on) btn.classList.add('kag-busy'); else btn.classList.remove('kag-busy');
+}
+
 function vmsg(text, isErr){
   var m = $('kag-ver-msg');
   if (!m) return;
@@ -393,12 +404,16 @@ function vmsg(text, isErr){
   m.className = 'kag-msg' + (isErr ? ' kag-err' : '');
 }
 
-function sendVerify(user){
+function sendVerify(user, btn){
   if (!user) return;
+  busyBtn(btn, true);
+  vmsg(T('Sending...', 'جاري الإرسال...'), false);
   user.sendEmailVerification().then(function () {
-    vmsg(T('Confirmation email sent to ' + user.email + '.',
-           'تم إرسال رسالة التأكيد إلى ' + user.email + '.'), false);
+    busyBtn(btn, false);
+    vmsg(T('Sent to ' + user.email + '. It arrives from ' + SENDER + '.',
+           'تم الإرسال إلى ' + user.email + '. تصل الرسالة من ' + SENDER + '.'), false);
   }).catch(function (e) {
+    busyBtn(btn, false);
     var c = (e && e.code) || '';
     if (c === 'auth/too-many-requests')
       vmsg(T('An email was just sent. Please wait a minute before asking for another.',
@@ -413,22 +428,25 @@ function showVerify(user){
   var g = $('kms-auth-gate'); if (g) g.style.display = '';
   $('kag-ver-t').textContent = T('Confirm your email address', 'أكّد بريدك الإلكتروني');
   $('kag-ver-s').textContent = T(
-    'We sent a confirmation link to ' + (user.email || '') + '. Open that link, then come back here and press Continue. If it has not arrived, check your spam folder.',
-    'أرسلنا رابط تأكيد إلى ' + (user.email || '') + '. افتح الرابط ثم عُد إلى هنا واضغط متابعة. وإن لم تصلك الرسالة، تفقّد مجلد الرسائل غير المرغوب فيها.');
-  $('kag-ver-go').textContent = T('I have confirmed — continue', 'لقد أكّدت — متابعة');
+    'We sent a confirmation link to ' + (user.email || '') + '. It arrives from ' + SENDER + ' — check your spam or junk folder if you cannot see it. Open the link, then press the button below.',
+    'أرسلنا رابط تأكيد إلى ' + (user.email || '') + '. تصل الرسالة من ' + SENDER + ' — تفقّد مجلد الرسائل غير المرغوب فيها إن لم تجدها. افتح الرابط ثم اضغط الزر بالأسفل.');
+  $('kag-ver-go').textContent = T('I opened the link — check now', 'فتحت الرابط — تحقّق الآن');
   $('kag-ver-re').textContent = T('Send the email again', 'إعادة إرسال الرسالة');
   $('kag-ver-out').textContent = T('Use a different email', 'استخدام بريد آخر');
-  if (!window.__kagSent) { window.__kagSent = true; vmsg(''); sendVerify(user); }
+  if (!window.__kagSent) { window.__kagSent = true; sendVerify(user, $('kag-ver-re')); }
   $('kag-ver-go').onclick = function () {
-    vmsg(T('Checking...', 'جاري التحقق...'), false);
+    var go = $('kag-ver-go');
+    busyBtn(go, true);
+    vmsg(T('Checking with the server...', 'جاري التحقق من الخادم...'), false);
     user.reload().then(function () {
       var u = auth.currentUser;
-      if (u && u.emailVerified) { window.__kagSent = false; onUser(u); }
-      else vmsg(T('Not confirmed yet. Open the link in the email, then press Continue.',
-                  'لم يتم التأكيد بعد. افتح الرابط الموجود في الرسالة ثم اضغط متابعة.'), true);
-    }).catch(function (e) { vmsg(errText(e), true); });
+      if (u && u.emailVerified) { window.__kagSent = false; busyBtn(go, false); onUser(u); }
+      else { busyBtn(go, false);
+        vmsg(T('This address is still not confirmed. Open the link in the email first — this button only checks, it cannot skip the step.',
+               'لم يتم تأكيد هذا البريد بعد. افتح الرابط في الرسالة أولاً — هذا الزر يتحقق فقط ولا يمكنه تخطي الخطوة.'), true); }
+    }).catch(function (e) { busyBtn(go, false); vmsg(errText(e), true); });
   };
-  $('kag-ver-re').onclick = function () { sendVerify(auth.currentUser || user); };
+  $('kag-ver-re').onclick = function () { sendVerify(auth.currentUser || user, $('kag-ver-re')); };
   $('kag-ver-out').onclick = function () {
     window.__kagSent = false;
     try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
