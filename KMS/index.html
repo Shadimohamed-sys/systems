@@ -286,16 +286,18 @@ body {
     flex-direction: column;
     overflow: hidden;
   }
-  .main > .right-panel > .card:first-child { flex: 1.25 1 0; }
+  .main > .right-panel > .card:first-child { flex: 1.1 1 0; }
   .main > .right-panel > .card:last-child { min-width: 320px; }
 
-  /* the log column is narrower than full width, so give every row a chance to
-     show Action / Date / Time without a horizontal scroll */
+  /* The log column is narrower than full width. Hide Barcode and Employee ID
+     here so that Action, Date and Time stay visible without scrolling sideways
+     - both are still in the row, in the CSV export, and in the stacked layout. */
   .main > .right-panel > .card:last-child .log-table th,
   .main > .right-panel > .card:last-child .log-table td { padding-left: 8px; padding-right: 8px; }
-  .main > .right-panel > .card:last-child .log-table td:nth-child(4) {
-    max-width: 150px; overflow: hidden; text-overflow: ellipsis;
-  }
+  .main > .right-panel > .card:last-child .log-table th:nth-child(3),
+  .main > .right-panel > .card:last-child .log-table td:nth-child(3),
+  .main > .right-panel > .card:last-child .log-table th:nth-child(5),
+  .main > .right-panel > .card:last-child .log-table td:nth-child(5) { display: none; }
 
   /* drag handles between the three columns */
   .kms-split { flex: 0 0 7px; align-self: stretch; cursor: col-resize; position: relative; }
