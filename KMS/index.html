@@ -286,8 +286,27 @@ body {
     flex-direction: column;
     overflow: hidden;
   }
-  .main > .right-panel > .card:first-child { flex: 1.5 1 0; }
-  .main > .right-panel > .card:last-child { min-width: 430px; }
+  .main > .right-panel > .card:first-child { flex: 1.25 1 0; }
+  .main > .right-panel > .card:last-child { min-width: 320px; }
+
+  /* the log column is narrower than full width, so give every row a chance to
+     show Action / Date / Time without a horizontal scroll */
+  .main > .right-panel > .card:last-child .log-table th,
+  .main > .right-panel > .card:last-child .log-table td { padding-left: 8px; padding-right: 8px; }
+  .main > .right-panel > .card:last-child .log-table td:nth-child(4) {
+    max-width: 150px; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* drag handles between the three columns */
+  .kms-split { flex: 0 0 7px; align-self: stretch; cursor: col-resize; position: relative; }
+  .kms-split::after {
+    content: ""; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 3px; height: 42px; border-radius: 2px; background: var(--border);
+    transition: background .15s;
+  }
+  .kms-split:hover::after, .kms-split.kms-dragging::after { background: var(--accent, #1A5FA8); height: 70px; }
+  body.kms-resizing, body.kms-resizing * { cursor: col-resize !important; user-select: none !important; }
   .main > .right-panel > .card > .card-header { flex: 0 0 auto; }
   .main > .right-panel > .card > .card-body {
     flex: 1 1 auto;
@@ -6974,6 +6993,81 @@ document.getElementById('tangooos-logo').src = 'data:image/png;base64,' + TANGOO
     if (changed) save('kms_employees', employees);
     localStorage.setItem('kms_fieldpatch_v2', '1');
   } catch (e) {}
+})();
+
+
+// ══════════════════════════════════
+//  RESIZABLE DESK COLUMNS
+//  Drag the handle between two columns to set their width. Double-click a
+//  handle to put it back to the default. Widths are remembered per browser.
+// ══════════════════════════════════
+(function kmsResizableColumns() {
+  var MIN_LEFT = 260, MAX_LEFT = 720;
+  var main  = document.querySelector('.main');
+  var left  = document.querySelector('.main > .left-panel');
+  var right = document.querySelector('.main > .right-panel');
+  if (!main || !left || !right) return;
+  var cards = right.children;
+  var board = cards[0], log = cards[1];
+  if (!board || !log) return;
+
+  function saveNum(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+  function readNum(k) { try { return parseFloat(localStorage.getItem(k)); } catch (e) { return NaN; } }
+
+  var w = readNum('kms_col_left');
+  if (w >= MIN_LEFT && w <= MAX_LEFT) left.style.width = w + 'px';
+  var f = readNum('kms_col_board');
+  if (f >= 0.35 && f <= 4) board.style.flex = f + ' 1 0';
+
+  function handle() { var d = document.createElement('div'); d.className = 'kms-split'; d.title = 'Drag to resize \u00b7 double-click to reset'; return d; }
+
+  var h1 = handle(); main.insertBefore(h1, right);
+  var h2 = handle(); right.insertBefore(h2, log);
+
+  function isRtl() { return document.documentElement.dir === 'rtl'; }
+
+  function wire(el, onMove, onReset) {
+    el.addEventListener('mousedown', function (e) {
+      if (window.innerWidth < 1200) return;
+      e.preventDefault();
+      el.classList.add('kms-dragging');
+      document.body.classList.add('kms-resizing');
+      function mm(ev) { onMove(ev); }
+      function mu() {
+        document.removeEventListener('mousemove', mm);
+        document.removeEventListener('mouseup', mu);
+        el.classList.remove('kms-dragging');
+        document.body.classList.remove('kms-resizing');
+      }
+      document.addEventListener('mousemove', mm);
+      document.addEventListener('mouseup', mu);
+    });
+    el.addEventListener('dblclick', onReset);
+  }
+
+  wire(h1, function (ev) {
+    var r = main.getBoundingClientRect();
+    var px = isRtl() ? (r.right - ev.clientX) : (ev.clientX - r.left);
+    px = Math.max(MIN_LEFT, Math.min(MAX_LEFT, px));
+    left.style.width = px + 'px';
+    saveNum('kms_col_left', Math.round(px));
+  }, function () {
+    left.style.width = '';
+    try { localStorage.removeItem('kms_col_left'); } catch (e) {}
+  });
+
+  wire(h2, function (ev) {
+    var r = right.getBoundingClientRect();
+    if (!r.width) return;
+    var px = isRtl() ? (r.right - ev.clientX) : (ev.clientX - r.left);
+    var frac = Math.max(0.2, Math.min(0.82, px / r.width));
+    var ratio = Math.max(0.35, Math.min(4, frac / (1 - frac)));
+    board.style.flex = ratio + ' 1 0';
+    saveNum('kms_col_board', ratio.toFixed(3));
+  }, function () {
+    board.style.flex = '';
+    try { localStorage.removeItem('kms_col_board'); } catch (e) {}
+  });
 })();
 
 // ══════════════════════════════════
