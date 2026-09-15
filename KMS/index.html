@@ -4827,6 +4827,7 @@ function openAdmin() {
 }
 function closeAdmin() {
   document.getElementById('admin-modal').classList.remove('open');
+  _adminUnlocked = false;   // next open must authenticate again
   focusInput();
 }
 
@@ -6134,12 +6135,12 @@ var _adminUnlocked = false;
 var _mgrPending = null;
 
 function openAdminSecure() {
-  if (_adminUnlocked) { openAdmin(); return; }
-  // First run: no manager badge and no admin PIN have been set yet, so there is
-  // nothing to check against. Let the owner in to set them, then it locks.
+  // Manage Keys is always gated. There is no session-wide unlock: every time the
+  // panel is opened, a manager badge or the admin PIN has to be presented again.
   if (!getManagerId() && !load('kms_admin_pin', '')) {
-    _adminUnlocked = true;
-    openAdmin();
+    // Nothing to check against yet - the owner sets the credential first,
+    // then has to authenticate with it like everyone else.
+    openMgrFirstRun();
     return;
   }
   _mgrPending = function() { openAdmin(); };
@@ -6148,6 +6149,28 @@ function openAdminSecure() {
   document.getElementById('mgr-overlay').classList.add('open');
   setTimeout(function() { if (idEl) idEl.focus(); }, 80);
 }
+function openMgrFirstRun(){
+  var isAr = (typeof currentLang !== 'undefined' && currentLang === 'ar');
+  var pin = window.prompt(isAr
+    ? 'لم يتم ضبط رمز مرور للمشرف بعد.\nاختر رمزاً من 6 أرقام لحماية إدارة المفاتيح:'
+    : 'No admin PIN has been set yet.\nChoose a 6-digit PIN to protect Manage Keys:');
+  if (pin === null) return;
+  pin = String(pin).replace(/[^0-9]/g, '');
+  if (pin.length !== 6) {
+    showToast(isAr ? 'الرمز يجب أن يكون 6 أرقام' : 'The PIN must be exactly 6 digits', 'error');
+    return;
+  }
+  var again = window.prompt(isAr ? 'أعد إدخال الرمز للتأكيد:' : 'Enter the PIN again to confirm:');
+  if (again === null) return;
+  if (String(again).replace(/[^0-9]/g, '') !== pin) {
+    showToast(isAr ? 'الرمزان غير متطابقين' : 'The two PINs do not match', 'error');
+    return;
+  }
+  save('kms_admin_pin', pin);
+  showToast(isAr ? 'تم حفظ رمز المشرف - أدخله للمتابعة' : 'Admin PIN saved - enter it to continue', 'success');
+  openAdminSecure();
+}
+
 function closeMgrGate() {
   document.getElementById('mgr-overlay').classList.remove('open');
   _mgrPending = null; focusInput();
@@ -6165,6 +6188,7 @@ function verifyMgr() {
   var fn = _mgrPending; _mgrPending = null;
   showToast(tr('toast_manager_access_granted'), 'success');
   if (fn) fn();
+  _adminUnlocked = false;   // single use - the next open is challenged again
 }
 function mgrScanCamera() {
   _camTarget = function(code) { var el = document.getElementById('mgr-id-input'); if (el) el.value = code; verifyMgr(); };
